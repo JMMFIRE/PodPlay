@@ -13,6 +13,7 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.raywenderlich.podplay.R
@@ -27,7 +28,9 @@ import com.raywenderlich.podplay.viewmodel.PodcastViewModel
 import com.raywenderlich.podplay.viewmodel.SearchViewModel
 import kotlinx.android.synthetic.main.activity_podcast.*
 
-class PodcastActivity : AppCompatActivity(), PodcastListAdapterListener {
+class PodcastActivity : AppCompatActivity(),
+    PodcastListAdapterListener,
+    PodcastDetailsFragment.OnPodcastDetailsListener {
 
     val TAG = javaClass.simpleName
     //pg 480
@@ -46,6 +49,7 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapterListener {
         updateControls()
         handleIntent(intent)
         addBackStackListener()
+        setupPodcastListView()
     }
 
     //pg 468 (pdf)
@@ -53,6 +57,19 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapterListener {
         val inflater = menuInflater                                                                 //Inflate the options menu
         inflater.inflate(R.menu.menu_search, menu)
         searchMenuItem = menu.findItem(R.id.search_item)                                            //The search action menu item is found
+        //pg 552
+        searchMenuItem.setOnActionExpandListener(object :
+        MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+               return true
+            }
+
+            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+                showSubscribedPodcasts()
+                return true
+            }
+        })
+
         val searchView = searchMenuItem.actionView as SearchView
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager               //Load the system SearchManager object. Adds the key functionality
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))                //Use searchManager to load search configuration and load it to searchView
@@ -190,5 +207,34 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapterListener {
                 podcastRecyclerView.visibility = View.VISIBLE
             }
         }
+    }
+
+    //pg 545
+    override fun  onSubscribe() {                                                                   //Use the view model to save the active podcast
+        podcastViewModel.saveAcivePodcast()
+        supportFragmentManager.popBackStack()                                                       //Removes the PodcastDetailsFragment
+    }
+
+    //pg 546
+    private fun showSubscribedPodcasts() {
+        val podcasts = podcastViewModel.getPodcasts()?.value                                        //get the podcasts LiveData object
+        if (podcasts != null) {                                                                     //If not null, update the podcast list adapter
+            toolbar.title = getString(R.string.subscribed_podcasts)
+            podcastListAdapter.setSearchData(podcasts)
+        }
+    }
+
+    private fun setupPodcastListView() {                                                            //Called when the Activity is created
+        podcastViewModel.getPodcasts()?.observe(this, Observer {                             //Calls getPodcasts() and obeserves for any changes
+            if (it != null) {
+                showSubscribedPodcasts()
+            }
+        })
+    }
+
+    //pg 552
+    override fun onUnsubscribe() {
+        podcastViewModel.deleteActivePodcast()
+        supportFragmentManager.popBackStack()
     }
 }

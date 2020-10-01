@@ -2,9 +2,14 @@ package com.raywenderlich.podplay.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import com.raywenderlich.podplay.model.Episode
 import com.raywenderlich.podplay.model.Podcast
 import com.raywenderlich.podplay.repository.PodcastRepo
+import com.raywenderlich.podplay.util.DateUtils
+import com.raywenderlich.podplay.util.DateUtils.dateToShortDate
+import com.raywenderlich.podplay.viewmodel.SearchViewModel
 import java.util.*
 
 //pg 494
@@ -14,6 +19,8 @@ class PodcastViewModel(application: Application) : AndroidViewModel (application
     var activePodcastViewData: PodcastViewData? = null
     //pg 542
     private var activePodcast: Podcast? = null
+    //pg 543
+    var livePodcastData: LiveData<List<SearchViewModel.PodcastSummaryViewData>>? = null
 
     data class PodcastViewData(
         var subscribed: Boolean = false,
@@ -43,7 +50,7 @@ class PodcastViewModel(application: Application) : AndroidViewModel (application
 
     private fun podcastToPodcastView(podcast: Podcast) : PodcastViewData {                          //Converts a Podcast model to a PodcastViewData object
         return PodcastViewData(
-            false,
+            podcast.id != null,
             podcast.feedTitle,
             podcast.feedUrl,
             podcast.feedDesc,
@@ -67,10 +74,41 @@ class PodcastViewModel(application: Application) : AndroidViewModel (application
         }
     }
 
-
     //pg 542
     fun saveAcivePodcast() {
         val repo = podcastRepo ?: return
         activePodcast?.let { repo.save(it) }
+    }
+
+    private fun podcastToSummaryView(podcast: Podcast): SearchViewModel.PodcastSummaryViewData {
+        return SearchViewModel.PodcastSummaryViewData(
+            podcast.feedTitle,
+            DateUtils.dateToShortDate(podcast.lastUpdated),
+            podcast.imageUrl,
+            podcast.feedUrl)
+    }
+
+    //pg 543
+    fun getPodcasts(): LiveData<List<SearchViewModel.PodcastSummaryViewData>>? {
+        val repo = podcastRepo ?: return null
+
+        if (livePodcastData == null) {                                                              //Create a new livePodcastData if null
+            val liveData = repo.getAll()                                                            //Retrieves all the assets from the podcast repo
+            livePodcastData = Transformations.map(liveData)                                         //Convert the list into a LiveData object
+            {podcastList ->
+                podcastList.map { podcast ->
+                    podcastToSummaryView(podcast)
+                }
+            }
+        }
+        return livePodcastData
+    }
+
+    //pg 551
+    fun deleteActivePodcast() {
+        val repo = podcastRepo ?: return
+        activePodcast?.let {
+            repo.delete(it)
+        }
     }
 }

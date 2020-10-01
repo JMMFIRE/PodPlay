@@ -1,5 +1,5 @@
 package com.raywenderlich.podplay.service
-/////////////////////////////////
+
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -16,7 +16,7 @@ interface ItunesService {
                 .baseUrl("https://itunes.apple.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-            retrofit.create<ItunesService>(ItunesService::class.java)
+            retrofit.create(ItunesService::class.java)
         }
     }
 }

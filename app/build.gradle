@@ -4,13 +4,13 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion "30.0.2"
 
     defaultConfig {
         applicationId "com.raywenderlich.podplay"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion 24
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
@@ -30,7 +30,7 @@ android {
         targetCompatibility = 1.8
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()                                             //Tells Android Studio to target Java 8 when compiling
+        jvmTarget = JavaVersion.VERSION_1_8.toString()                                              //Tells Android Studio to target Java 8 when compiling
     }
 }
 

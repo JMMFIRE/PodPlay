@@ -26,7 +26,7 @@ object DateUtils {
     }
 
     //pg 528
-    fun datToShortDate(date: Date): String {
+    fun dateToShortDate(date: Date): String {
         val outputFormat = DateFormat.getDateInstance(
             DateFormat.SHORT, Locale.getDefault())
         return outputFormat.format(date)

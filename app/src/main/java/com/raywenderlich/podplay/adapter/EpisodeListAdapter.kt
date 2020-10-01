@@ -37,7 +37,7 @@ class EpisodeListAdapter(private var episodeViewList: List<PodcastViewModel.Epis
         holder.descTextView.text = HtmlUtils.htmlToSpannable(episodeView.description ?: "")
         holder.durationTextView.text = episodeView.duration
         holder.releaseDateTextView.text = episodeView.releaseDate?.let {
-            DateUtils.datToShortDate(it)
+            DateUtils.dateToShortDate(it)
         }
     }
 

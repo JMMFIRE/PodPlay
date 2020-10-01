@@ -1,5 +1,6 @@
 package com.raywenderlich.podplay.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.*
@@ -22,6 +23,10 @@ class PodcastDetailsFragment : Fragment() {
     private val podcastViewModel: PodcastViewModel by activityViewModels()                          //activityViewModels() is an extension function. Allows fragment to access and share view models from the parent activity
     //pg 525
     private lateinit var episodeListAdapter: EpisodeListAdapter
+    //pg 544
+    private var listener: OnPodcastDetailsListener? = null
+    //pg 550
+    private var menuItem: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,9 @@ class PodcastDetailsFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.menu_details, menu)
+        //pg 550
+        menuItem = menu.findItem(R.id.menu_feed_action)
+        updateMenuItem()
     }
 
     //pg 499
@@ -79,5 +87,45 @@ class PodcastDetailsFragment : Fragment() {
         episodeListAdapter = EpisodeListAdapter(
             podcastViewModel.activePodcastViewData?.episodes)
         episodeRecyclerView.adapter = episodeListAdapter
+    }
+
+    //pg 544
+    interface OnPodcastDetailsListener {                                                            //Required parent activity to implement interface
+        fun onSubscribe()
+        fun onUnsubscribe()
+    }
+
+    override fun onAttach(context: Context) {                                                       //Called by Fragment anager when the fragment is attached
+        super.onAttach(context)
+        if (context is OnPodcastDetailsListener) {
+            listener = context
+        } else {
+            throw RuntimeException(context.toString() + " must implement OnPodcastDetails Listener")
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {                                   //Called when a menu item is sleceted
+        when (item.itemId) {
+            R.id.menu_feed_action -> {                                                              //If the item id matches the subscribe button
+                podcastViewModel.activePodcastViewData?.feedUrl?.let {
+                    //pg 551
+                    if (podcastViewModel.activePodcastViewData?.subscribed!!) {
+                        listener?.onUnsubscribe()
+                    } else {
+                        listener?.onSubscribe()
+                    }
+                }
+                return true
+            } else ->   return super.onOptionsItemSelected(item)
+        }
+    }
+
+    //pg 550
+    private fun updateMenuItem() {
+        val viewData = podcastViewModel.activePodcastViewData ?:
+                return
+        menuItem?.title = if (viewData.subscribed)
+            getString(R.string.unsubscribe) else
+        getString(R.string.subscribe)
     }
 }
