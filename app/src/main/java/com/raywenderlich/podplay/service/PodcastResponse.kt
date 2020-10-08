@@ -8,7 +8,7 @@ data class PodcastResponse(
                                                                                                     // and hierarchy of the JSON data returned by iTunes
         val collectionCensoredName: String,
         val feedUrl: String,
-        val artworkUrl30: String,
+        val artworkUrl100: String,
         val releaseDate: String
     )
 }

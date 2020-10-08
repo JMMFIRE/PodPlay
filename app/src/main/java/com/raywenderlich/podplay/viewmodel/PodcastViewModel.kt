@@ -21,6 +21,8 @@ class PodcastViewModel(application: Application) : AndroidViewModel (application
     private var activePodcast: Podcast? = null
     //pg 543
     var livePodcastData: LiveData<List<SearchViewModel.PodcastSummaryViewData>>? = null
+    //pg 619
+    var activeEpisodeViewData: EpisodeViewData? = null
 
     data class PodcastViewData(
         var subscribed: Boolean = false,
@@ -37,14 +39,16 @@ class PodcastViewModel(application: Application) : AndroidViewModel (application
         var description: String? = "",
         var mediaUrl: String? = "",
         var releaseDate: Date? = null,
-        var duration: String? = ""
+        var duration: String? = "",
+        var isVideo: Boolean = false
         )
 
     //pg 495
     private fun episodesToEpisodesView(episodes: List<Episode>): List<EpisodeViewData> {            //Converts list of Episode models from repo to EpisodeViewData view models
-        return episodes.map {                                                                       //Map helps collect all variale into a list
+        return episodes.map {
+            val isVideo = it.mimeType.startsWith("video")
             EpisodeViewData(it.guid, it.title, it.description,
-                it.mediaUrl, it.releaseDate, it.duration)
+                it.mediaUrl, it.releaseDate, it.duration, isVideo)
         }
     }
 
@@ -109,6 +113,21 @@ class PodcastViewModel(application: Application) : AndroidViewModel (application
         val repo = podcastRepo ?: return
         activePodcast?.let {
             repo.delete(it)
+        }
+    }
+
+    //pg 570
+    fun setActivePodcast(feedUrl: String, callback:                                                 //Loads podcast from the database based on the feedUrl
+        (SearchViewModel.PodcastSummaryViewData?) -> Unit) {
+        val repo = podcastRepo ?: return
+        repo.getPodcast(feedUrl) {
+            if (it == null) {
+                callback(null)
+            } else {
+                activePodcastViewData = podcastToPodcastView(it)
+                activePodcast = it
+                callback(podcastToSummaryView(it))
+            }
         }
     }
 }

@@ -62,4 +62,8 @@ dependencies {
     //pg 532
     implementation "androidx.room:room-runtime:$room_version"                                       //Room dependencies
     kapt "androidx.room:room-compiler:$room_version"
+    //pg 561
+    implementation "androidx.work:work-runtime-ktx:2.4.0"
+    //pg 576
+    implementation "androidx.media:media:1.2.0"
 }

@@ -1,10 +1,19 @@
 package com.raywenderlich.podplay.ui
 
+import android.content.ComponentName
 import android.content.Context
+import android.media.session.MediaController
+import android.net.Uri
 import android.os.Bundle
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.text.method.ScrollingMovementMethod
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -12,12 +21,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.raywenderlich.podplay.R
 import com.raywenderlich.podplay.adapter.EpisodeListAdapter
+import com.raywenderlich.podplay.service.PodplayMediaService
 import com.raywenderlich.podplay.viewmodel.PodcastViewModel
 import kotlinx.android.synthetic.main.fragment_podcast_details.*
+import java.lang.StringBuilder
+import com.raywenderlich.podplay.ui.PodcastActivity
 
 
 //pg 497
-class PodcastDetailsFragment : Fragment() {
+class PodcastDetailsFragment : Fragment(),
+EpisodeListAdapter.EpisodeListAdapterListener {
 
     //pg 498
     private val podcastViewModel: PodcastViewModel by activityViewModels()                          //activityViewModels() is an extension function. Allows fragment to access and share view models from the parent activity
@@ -27,6 +40,7 @@ class PodcastDetailsFragment : Fragment() {
     private var listener: OnPodcastDetailsListener? = null
     //pg 550
     private var menuItem: MenuItem? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +57,8 @@ class PodcastDetailsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        updateControls()
         setupControls()
+        updateControls()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -85,7 +99,7 @@ class PodcastDetailsFragment : Fragment() {
         episodeRecyclerView.addItemDecoration(dividerItemDecoration)
 
         episodeListAdapter = EpisodeListAdapter(
-            podcastViewModel.activePodcastViewData?.episodes)
+            podcastViewModel.activePodcastViewData?.episodes, this)
         episodeRecyclerView.adapter = episodeListAdapter
     }
 
@@ -93,6 +107,7 @@ class PodcastDetailsFragment : Fragment() {
     interface OnPodcastDetailsListener {                                                            //Required parent activity to implement interface
         fun onSubscribe()
         fun onUnsubscribe()
+        fun onShowEpisodePlayer(episodeViewData: PodcastViewModel.EpisodeViewData)
     }
 
     override fun onAttach(context: Context) {                                                       //Called by Fragment anager when the fragment is attached
@@ -127,5 +142,18 @@ class PodcastDetailsFragment : Fragment() {
         menuItem?.title = if (viewData.subscribed)
             getString(R.string.unsubscribe) else
         getString(R.string.subscribe)
+    }
+
+    //pg 583
+    override fun onStop() {                                                                         //If the media controller is available and the mediaControllerCallback is not null the callabacks object is unregistered
+        super.onStop()
+            }
+
+    override fun onStart() {
+        super.onStart()
+    }
+
+    override fun onSelectedEpisode(episodeViewData: PodcastViewModel.EpisodeViewData) {
+        listener?.onShowEpisodePlayer(episodeViewData)
     }
 }
