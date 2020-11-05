@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.raywenderlich.podplay"
+<manifest package="com.jacobmassotto.podplay"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -21,14 +21,14 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.PodplayMediaService">
+        <service android:name="com.jacobmassotto.podplay.service.PodplayMediaService">
             <intent-filter>
                 <action
                     android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
-        <activity android:name=".ui.PodcastActivity"
+        <activity android:name="com.jacobmassotto.podplay.ui.PodcastActivity"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
